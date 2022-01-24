@@ -1,19 +1,28 @@
 #Exercise 2.3
+# Treatment observations
 tobs = c(6,6,6,6,7,9,10,10,11,13,16,17,19,20,22,23,25,32,32,34,35,
          1,1,2,2,3,4,4,5,5,8,8,8,8,11,11,12,12,15,17,22,23)
+
+
+# 0 - alive, 1 - dead
 w = c(0,1,1,1,1,0,0,1,0,1,1,0,0,0,1,1,0,0,0,0,0,
       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+
 x = c(rep(1,21),rep(0,21))
 X = cbind(1,x)
 
+# Define the log likelihood function 
 loglik = function(param,tobs=tobs,w=w,x=x)
 {
 	alpha = exp(param[1])
 	beta = param[2:3]
-	Lam = tobs^alpha
-	lam = alpha*tobs^(alpha-1)
-	mu = Lam*exp(beta[1]+beta[2]*x)
-	sum(w*log(mu)-mu+w*log(lam/Lam))
+
+  # The lambdas are getting values according to the task
+	Lambda = tobs^alpha
+	lambda = alpha*tobs^(alpha-1)
+
+	mu = Lambda*exp(beta[1]+beta[2]*x)
+	sum(w*log(mu)-mu+w*log(lambda/Lambda))
 }
 
 minusloglik = function(param,tobs=tobs,w=w,x=x)
@@ -21,6 +30,8 @@ minusloglik = function(param,tobs=tobs,w=w,x=x)
 	-loglik(param,tobs,w,x)
 }
 
+
+# Gradient
 l1func = function(param,tobs=tobs,w=w,x=x)
 {
 	alpha = exp(param[1])
@@ -31,6 +42,7 @@ l1func = function(param,tobs=tobs,w=w,x=x)
 	matrix(c(sum((w-mu)*log(tobs)+w/alpha),sum(w-mu),sum((w-mu)*x)),ncol=1)
 }
 
+# Hessian
 l2func = function(param,tobs=tobs,w=w,x=x)
 {
 	alpha = exp(param[1])
@@ -48,7 +60,7 @@ theta = c(1,0,0)
 l = loglik(theta,tobs,w,x)
 g = l1func(theta,tobs,w,x)
 h = l2func(theta,tobs,w,x)
-eps = 0.00001
+eps = 0.0000001
 while(sum(abs(g))>eps)
 {
   theta = theta - solve(h,g)
@@ -59,28 +71,32 @@ while(sum(abs(g))>eps)
 }
 
 show(c(exp(theta[1]),theta[2:3]))
+
+# task d, approximate fisher information
 Sigma = -solve(h)
 show(Sigma)
 show(Sigma[2,3]/(sqrt(Sigma[2,2]*Sigma[3,3])))
 
 
-res.opt = optim(c(1,0,0),minusloglik,tobs=tobs,w=w,x=x,method="BFGS",control=list(maxit=1000),hessian=T)
+res.opt = optim(c(1,0,0),minusloglik,tobs=tobs,w=w,x=x,method="L-BFGS-B",control=list(maxit=1000),hessian=T)
 show(c(exp(res.opt$par[1]),res.opt$par[2:3]))
 show(solve(-res.opt$hessian))
 
 #Gauss-Seidel
 minusl.alpha = function(lalpha,beta,tobs=tobs,w=w,x=x)
 {
-  par = c(lalpha,beta)
-  l = minusloglik(par,tobs,w,x)
-  show(c(par,l))
+  param = c(lalpha,beta)
+  l = minusloglik(param,tobs,w,x)
+  show(c(param,l))
   l
 }
+
 minusl.beta0 = function(beta0,lalpha,beta1,tobs=tobs,w=w,x=x)
 {
-  par = c(lalpha,beta0,beta1)
-  minusloglik(par,tobs,w,x)
+  param = c(lalpha,beta0,beta1)
+  minusloglik(param,tobs,w,x)
 }
+
 minusl.beta1 = function(beta1,lalpha,beta0,tobs=tobs,w=w,x=x)
 {
   par = c(lalpha,beta0,beta1)
@@ -88,7 +104,7 @@ minusl.beta1 = function(beta1,lalpha,beta0,tobs=tobs,w=w,x=x)
 }
 
 theta = c(1,0,0)
-for(i in 1:100)
+for(i in 1:1000)
 {
   res = optimize(minusl.alpha,interval=c(-10,10),beta=theta[2:3],tobs=tobs,w=w,x=x)
   theta[1] = res$min
