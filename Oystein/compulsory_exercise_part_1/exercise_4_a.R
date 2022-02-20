@@ -6,13 +6,11 @@ colnames(optimalTransport) = c('x', 'y')
 x = optimalTransport$x
 y = optimalTransport$y
 
-# distance: 4.269566
-# best_to_now = c(17, 12, 9, 15, 18, 14, 13, 3, 16, 11, 6, 2, 10, 7, 4, 8, 21, 20, 5, 19)
 
 # distance 4.169531
 best_to_now = c(19, 21, 8, 4, 7, 20, 10, 5, 2, 6, 11, 16, 3, 13, 14, 18, 15, 9, 12, 17)
 
-if (TRUE){
+if (FALSE){
   route.current = best_to_now
 } else {
   route.current = sample(2:length(x), replace = FALSE) 
@@ -25,8 +23,12 @@ dist_current = distance_of_traveling(x, y, route.current)
 # Wish to have control of the distance over time
 dist_seq = c()
 
+# want to save the best run so far
+best_route_now = route.current 
+best_dist_now = dist_current
+
 # Initialization for convergence criterion
-max_iter = 10000
+max_iter = 100000
 iter = 1
 converged = FALSE
 same_value = 0
@@ -59,6 +61,11 @@ while(!(converged) && iter < max_iter)
     {
       route.current = route.neighboor
       dist_current = dist_neighboor
+      
+      if (dist_current < best_dist_now) {
+        best_route_now = route.current
+        best_dist_now = dist_current
+      }
     }
     
     # adding the distance to see the improvement of the model
@@ -83,7 +90,8 @@ while(!(converged) && iter < max_iter)
 plot.ts(dist_seq)
 show(min(dist_seq))
 
-draw_route_of_traveling(x, y, route.current, wait = 0.3)
+#draw_route_of_traveling(x, y, route.current, wait = 0.3)
 draw_route_of_traveling(x, y, best_to_now, wait = 0.3)
+draw_route_of_traveling(x, y, best_route_now, wait = 0.3)
 
 

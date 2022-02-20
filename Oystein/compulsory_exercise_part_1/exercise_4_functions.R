@@ -84,7 +84,7 @@ draw_route_of_traveling_2 = function(x, y, route1, route2, wait = 0.3){
 
 # Every_other_zero - as long as it is possible
 every_other_zero = function(n, array){
-  new_array = c(rep(0, max(2 * length(array), 20)))
+  new_array = c(rep(0, max(2 * length(array), n)))
   
   for (i in 1:length(array)) {
     new_array[2*i] = array[i]
@@ -99,10 +99,9 @@ every_other_zero = function(n, array){
       remove_index = sample((1:array_len)[new_array == 0], 1)
       new_array = new_array[1:array_len != remove_index]
     }
-    
     array_len = array_len - 1
     
-  
+    
   }
   
   new_array

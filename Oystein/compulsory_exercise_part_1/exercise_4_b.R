@@ -64,8 +64,7 @@ while(!(converged) && iter < max_iter)
     dist_current = dist_neighbor
     
     if (dist_current < best_dist_now) {
-      best_route1_now = route1.current
-      best_route2_now = route2.current
+      best_route_now = route.current
       best_dist_now = dist_current
     }
   }
