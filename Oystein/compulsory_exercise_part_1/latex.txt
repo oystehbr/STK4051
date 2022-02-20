@@ -1,0 +1,176 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{esint}
+\usepackage{amsmath}
+\usepackage{bbm}
+\usepackage{tikz}
+\usepackage{mathtools}
+\usepackage{ dsfont }
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage[font={small,it}]{caption}
+\usepackage{caption}
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage[euler]{textgreek}
+\graphicspath{{./plots/}}
+\usepackage{biblatex}
+\addbibresource{reff.bib}
+\usepackage{caption}
+\usepackage{subfig}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage[font=small,labelfont=bf]{caption}
+\setcounter{secnumdepth}{5}
+\usepackage[autocite=footnote,notetype=foot+end,style=authortitle-ibid]{biblatex}
+\usepackage{amsmath}
+\DeclareMathOperator{\sign}{sign}
+\usepackage{geometry}
+ \geometry{
+ a4paper,
+ total={150mm,230mm},
+ left=30mm,
+ top=30mm,
+ }
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+\title{Compulsory exercise - STK4051}
+\author{Øystein Høistad Bruce}
+\date{February 2022}
+
+\begin{document}
+\maketitle
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=8.5cm]{uio.jpeg}
+\end{figure}
+
+\begin{center}
+    \Large
+    Department of Mathematics 
+    \normalsize
+\end{center}
+
+
+\newpage
+
+\tableofcontents
+\newpage
+
+\section{Exercise 1 Lp-regularization}
+Simplified regression model:
+
+\begin{align}
+\label{simple_regression}
+    y_i = \beta_i + \epsilon_i \quad i=1, ..., n
+\end{align}
+where $y_i$ is the data, $\beta_i$ are the parameters, and $\epsilon_i \sim \mathcal{N}(0, 1^2) $ is an error term. The probability distribution of $\epsilon_i$ is:
+
+\begin{align}
+    p(\epsilon_i) = \frac{1}{\sqrt{2\pi}} \, \exp{\{-\epsilon_i^2/2\}} \qquad -\infty < \epsilon_i < \infty
+\end{align}
+
+\subsection*{a) Derive the maximum likelihood estimator for $\beta_i$, i = 1, ..., n} 
+
+The probability of getting $y_i$ (given current estimates on beta) is the probability that a random sample from the standard normal distribution to be $y_i - \beta_i$. The likelihood can then be written as:
+
+\begin{align*}
+    L(\theta | y) 
+    &= \prod_{i=1}^{n} p(y_i - \beta_i)
+\end{align*}
+further, we get the following expression for the log-likelihood:
+
+\begin{align*}
+    l(\theta | y)
+    &= \log \, \{ L(\theta | y) \}
+    = \log \, \bigg\{ \prod_{i=1}^{n} p(y_i - \beta_i) \bigg\} \\
+    &= \sum_{i=1}^{n} \log \{ p(y_i - \beta_i)\} \\
+    &= \sum_{i=1}^{n} -\log \{ \sqrt{2 \pi} \} + \frac{(y_i - \beta_i)^2}{2}
+\end{align*}
+\noindent
+Now, we are ready to find the maximum likelihood estimator for $\beta_i$, by finding the derivative of the log-likelihood function w.r.t. $\beta_i$ and set it equal to zero. 
+
+\begin{align*}
+    \frac{\partial l(\theta | y)}{\partial \beta_i}
+    &= \frac{2(y_i - \beta_i)}{2} = (y_i - \beta_i) \stackrel{!}{=} 0
+\end{align*}
+\noindent
+The maximum likelihood estimator, will then be the following:
+\begin{align}
+    \hat{\beta_i} = y_i \qquad i = 1, ..., n
+\end{align}
+
+
+\subsection*{b}
+An alternative estimator is derived using a penalized least squares, by solving the optimization problem:
+
+\begin{align}
+    \min_{\beta} \, \{ -l(\beta | y) + \frac{\gamma}{p} \| \beta \|_p^p \}
+\end{align}
+where $l$ is the log-likelihood, $\gamma$ is a regularization parameter and
+
+\begin{align*}
+    \| \beta \|_p^p = \sum_{i=1}^{n} |\beta_i|^p
+\end{align*}
+
+\noindent
+\textbf{Show that}
+\begin{align}
+    f_{p, y} (\beta_i) = \beta_i + \gamma \cdot \sign (\beta_i) |\beta_i|^{p-1}
+\end{align}
+where $f_{p, y}(\beta_i)$ should satisfy 
+
+\begin{align*}
+    y_i = f_{p, y}(\beta_i) = y_i \quad i = 1, ..., n
+\end{align*}
+
+\noindent
+\textbf{Answer}\\
+We will first find the derivative of the expression we want to minimize w.r.t. $\beta_i$, then set the expression to 0. 
+
+\begin{align*}
+    \frac{\partial}{\partial \beta_i} \left( -l(\beta | y) + \frac{\gamma}{p} \| \beta \|_p^p \right)
+    &= -(y_i - \beta_i) + \frac{\gamma}{p} \, p |\beta_i|^{p-1} 
+    \, \frac{\partial |\beta_i|}{\beta_i} \\
+    &= -y_i + \beta_i + \gamma |\beta_i|^{p-1} 
+    \, \frac{\partial |\beta_i|}{\beta_i} \\
+    &= -y_i + \beta_i + \gamma |\beta_i|^{p-1} 
+    \, \sign ( \beta_i ) \stackrel{!}{=} 0
+\end{align*}
+\noindent
+Then, we solve for $y_i$ and get the result we were gonna prove:
+
+\begin{align*}
+    y_i = \beta_i + \gamma |\beta_i|^{p-1} 
+    \, \sign ( \beta_i ) \qquad i = 1, ..., n
+\end{align*}
+
+\subsection*{c} 
+Let $\gamma = \{ 1, 0.2 \}$, plot the function $f_{p, \gamma} (\beta)$ for $p = \{ 1.1, 2, 5, 100\}$ on the interval $[-5, 5]$. Give an interpretation of the result. \\
+
+
+\noindent
+Plot the inverse function by flipping the order of the arguments in the plotting function. Give an interpretation of the result. 
+
+
+
+
+\section{Exercise 2}
+
+
+\section{Exercise 3}
+
+
+\section{Bibliography}
+\printbibliography[heading=none] 
+
+\end{document}

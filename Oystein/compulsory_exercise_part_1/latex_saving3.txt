@@ -1,0 +1,339 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{esint}
+\usepackage{amsmath}
+\usepackage{bbm}
+\usepackage{tikz}
+\usepackage{mathtools}
+\usepackage{ dsfont }
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage[font={small,it}]{caption}
+\usepackage{caption}
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage[euler]{textgreek}
+\graphicspath{{./plots/}}
+\usepackage{biblatex}
+\addbibresource{reff.bib}
+\usepackage{caption}
+\usepackage{subfig}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage[font=small,labelfont=bf]{caption}
+\setcounter{secnumdepth}{5}
+\usepackage[autocite=footnote,notetype=foot+end,style=authortitle-ibid]{biblatex}
+\usepackage{amsmath}
+\DeclareMathOperator{\sign}{sign}
+\usepackage{geometry}
+ \geometry{
+ a4paper,
+ total={150mm,230mm},
+ left=30mm,
+ top=30mm,
+ }
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+\usepackage{mathtools}
+
+\newcommand{\expect}{\operatorname{E}\expectarg}
+\DeclarePairedDelimiterX{\expectarg}[1]{[}{]}{%
+  \ifnum\currentgrouptype=16 \else\begingroup\fi
+  \activatebar#1
+  \ifnum\currentgrouptype=16 \else\endgroup\fi
+}
+
+\newcommand{\innermid}{\nonscript\;\delimsize\vert\nonscript\;}
+\newcommand{\activatebar}{%
+  \begingroup\lccode`\~=`\|
+  \lowercase{\endgroup\let~}\innermid 
+  \mathcode`|=\string"8000
+}
+
+\title{Compulsory exercise - STK4051}
+\author{Øystein Høistad Bruce}
+\date{February 2022}
+
+\begin{document}
+\maketitle
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=8.5cm]{uio.jpeg}
+\end{figure}
+
+\begin{center}
+    \Large
+    Department of Mathematics 
+    \normalsize
+\end{center}
+
+
+\newpage
+
+\tableofcontents
+\newpage
+
+\section{Exercise 1 (Lp-regularization)}
+Simplified regression model:
+
+\begin{align}
+\label{simple_regression}
+    y_i = \beta_i + \epsilon_i \quad i=1, ..., n
+\end{align}
+where $y_i$ is the data, $\beta_i$ are the parameters, and $\epsilon_i \sim \mathcal{N}(0, 1^2) $ is an error term. The probability distribution of $\epsilon_i$ is:
+
+\begin{align}
+    p(\epsilon_i) = \frac{1}{\sqrt{2\pi}} \, \exp{\{-\epsilon_i^2/2\}} \qquad -\infty < \epsilon_i < \infty
+\end{align}
+
+\subsection*{a) Derive the maximum likelihood estimator for $\beta_i$, i = 1, ..., n} 
+
+The probability of getting $y_i$ (given current estimates on beta) is the probability that a random sample from the standard normal distribution to be $y_i - \beta_i$. The likelihood can then be written as:
+
+\begin{align*}
+    L(\theta | y) 
+    &= \prod_{i=1}^{n} p(y_i - \beta_i)
+\end{align*}
+further, we get the following expression for the log-likelihood:
+
+\begin{align*}
+    l(\theta | y)
+    &= \log \, \{ L(\theta | y) \}
+    = \log \, \bigg\{ \prod_{i=1}^{n} p(y_i - \beta_i) \bigg\} \\
+    &= \sum_{i=1}^{n} \log \{ p(y_i - \beta_i)\} \\
+    &= \sum_{i=1}^{n} -\log \{ \sqrt{2 \pi} \} + \frac{(y_i - \beta_i)^2}{2}
+\end{align*}
+\noindent
+Now, we are ready to find the maximum likelihood estimator for $\beta_i$, by finding the derivative of the log-likelihood function w.r.t. $\beta_i$ and set it equal to zero. 
+
+\begin{align*}
+    \frac{\partial l(\theta | y)}{\partial \beta_i}
+    &= \frac{2(y_i - \beta_i)}{2} = (y_i - \beta_i) \stackrel{!}{=} 0
+\end{align*}
+\noindent
+The maximum likelihood estimator, will then be the following:
+\begin{align}
+    \hat{\beta_i} = y_i \qquad i = 1, ..., n
+\end{align}
+
+
+\subsection*{b)}
+An alternative estimator is derived using a penalized least squares, by solving the optimization problem:
+
+\begin{align}
+    \min_{\beta} \, \{ -l(\beta | y) + \frac{\gamma}{p} \| \beta \|_p^p \}
+\end{align}
+where $l$ is the log-likelihood, $\gamma$ is a regularization parameter and
+
+\begin{align*}
+    \| \beta \|_p^p = \sum_{i=1}^{n} |\beta_i|^p
+\end{align*}
+
+\noindent
+\textbf{Show that}
+\begin{align}
+    f_{p, \gamma} (\beta_i) = \beta_i + \gamma \cdot \sign (\beta_i) |\beta_i|^{p-1}
+\end{align}
+where $f_{p, y}(\beta_i)$ should satisfy 
+
+\begin{align}
+\label{function_f_equal_y}
+    f_{p, y}(\beta_i) = y_i \quad i = 1, ..., n
+\end{align}
+
+\noindent
+\textbf{Answer}\\
+We will first find the derivative of the expression we want to minimize w.r.t. $\beta_i$, then set the expression to 0. 
+
+\begin{align*}
+    \frac{\partial}{\partial \beta_i} \left( -l(\beta | y) + \frac{\gamma}{p} \| \beta \|_p^p \right)
+    &= -(y_i - \beta_i) + \frac{\gamma}{p} \, p |\beta_i|^{p-1} 
+    \, \frac{\partial |\beta_i|}{\beta_i} \\
+    &= -y_i + \beta_i + \gamma |\beta_i|^{p-1} 
+    \, \frac{\partial |\beta_i|}{\beta_i} \\
+    &= -y_i + \beta_i + \gamma |\beta_i|^{p-1} 
+    \, \sign ( \beta_i ) \stackrel{!}{=} 0
+\end{align*}
+\noindent
+Then, we solve for $y_i$ and get the result we were gonna prove:
+
+\begin{align*}
+    y_i = \beta_i + \gamma |\beta_i|^{p-1} 
+    \, \sign ( \beta_i ) \qquad i = 1, ..., n
+\end{align*}
+
+\subsection*{c)} 
+Let $\gamma = \{ 1, 0.2 \}$, plot the function $f_{p, \gamma} (\beta)$ for $p = \{ 1.1, 2, 5, 100\}$ on the interval $[-5, 5]$. Give an interpretation of the result. \\
+
+
+\noindent
+Plot the inverse function by flipping the order of the arguments in the plotting function. Give an interpretation of the result. 
+
+
+\subsection*{d)}
+Implement a function which finds the root of expression (\ref{function_f_equal_y}). \\
+\noindent
+
+Testing the algorithm for $\gamma = 1$ and $p = \{ 1.1, 2, 100 \}$, and evaluate the results for $y \in [-5, 5]$.
+
+\subsection*{e)}
+Now, we are ready for doing the different estimations with actual data. The data we are given are y, and the ground truth values for beta, $\beta_{GT}$. \\
+
+\noindent
+Firstly, we will look at the penalized regression. We want to compute $\hat{\beta}_{\gamma, p}$ with $\gamma = 1, p = \{ 1.1, 2, 100\}$ \\
+
+\noindent
+Secondly, find the MLE estimator and compare the residuals with the previous cases. \\
+
+\noindent
+Lastly, we want to look at another way of achieve an estimator. That is:
+
+\begin{align*}
+    \hat{\beta}^{\text{Alt}}_{1, 100} = y - \hat{\beta}_{1, 100}
+\end{align*}
+
+\subsection*{f)}
+In the linear regression problem, \\
+\noindent
+TO BE CONTINUED
+
+
+\section{Exercise 2 (EM-algorithm)}
+For this exercise we will assume that $Y_i \quad i = 1, ..., n$ are independent and identically distributed according to the mixture distribution:
+
+\begin{align}
+    f(y_i) = p \cdot \phi(y_i; 0, 1^2) + (1-p) \cdot \phi (y_i; 0, \tau ^2 + 1^2)
+\end{align}
+where $\phi(y_i; \mu, \sigma^2)$ is the normal density with mean $\mu$ and variance $\sigma ^2$. We will now consider estimation of the parameters $\theta = (p, \tau ^2)$.
+
+\subsection*{a) Give an expression for the likelihood of $\theta$}
+The likelihood of $\theta$ can be expressed as follows:
+
+\begin{align*}
+    L(\theta | y) &= \prod_{i=1}^{n} f(y_i) \\
+    &= \prod_{i=1}^{n} \left[ p \cdot \phi(y_i; 0, 1^2) + (1-p) \cdot \phi (y_i; 0, \tau ^2 + 1^2) \right]
+\end{align*}
+
+\subsection*{b) Introduce the variable $C_i$ which identifies the model $y_i$ belongs to. Give an expression for the complete log-likelihood using the pairs $(C_i, y_i)_{i=1}^{n}$}
+We know that we can belong to either one of the two classes $\{ 0, 1\}$. Let class 0 be the data from the normal distribution with variance 1, and class 1 be the other one. \\
+
+\noindent
+Starting up with an expression for the complete likelihood:
+\begin{align*}
+    L_{\text{comp}}(\theta | (C, y)) = \prod_{i=1}^{n} \left[ \mathds{1}_{c_i = 0} \cdot \phi(y_i; 0, 1^2) + \mathds{1}_{c_i = 1} \cdot \phi (y_i; 0, \tau ^2 + 1^2) \right]
+\end{align*}
+
+\noindent
+Then we get the following for the complete log-likelihood:
+\begin{align*}
+    l_{\text{comp}}(\theta | (C, y)) &= \log \{ L_{\text{comp}}(\theta | (C, y)) \} \\
+    &= \sum_{i=1}^{n} \left[ \log \{ \mathds{1}_{c_i = 0} \cdot \phi(y_i; 0, 1^2) \} + \log \{ \mathds{1}_{c_i = 1} \cdot \phi (y_i; 0, \tau ^2 + 1^2) \} \right] \\
+    &= \sum_{i=1}^{n} \left[ \mathds{1}_{c_i = 0} \log \{ \phi(y_i; 0, 1^2) \} + \mathds{1}_{c_i = 1} \log \{ \phi (y_i; 0, \tau ^2 + 1^2) \} \right] \\
+    &= \sum_{i=1}^{n} \left[ \mathds{1}_{c_i = 0} \left(-\log (\sqrt{2\pi}) - \frac{y_i^2}{2} \right)
+    + \mathds{1}_{c_i = 1} \left(-\log (\sqrt{2\pi} \cdot \sqrt{\tau^2+1}) - \frac{y_i^2}{2 \, (\tau^2 + 1)} \right) \right]
+\end{align*}
+
+\subsection*{c) Give an expression for $Q(\theta, \theta^{(t)})$, what is the interpretation of $Q(\theta, \theta^{(t)})$. Derive the estimates for $\theta =  (p, \tau^2)$, using $Q(\theta, \theta^{(t)})$.}
+
+\begin{align*}
+    Q(\theta, \theta^{(t)}) 
+    &= E [ \, l_{\text{comp}} | y, \theta^{(t)} ] \\
+    &= E \left[ \sum_{i=1}^{n} \left( \mathds{1}_{c_i = 0} \left(-\log (\sqrt{2\pi}) - \frac{y_i^2}{2} \right)
+    + \mathds{1}_{c_i = 1} \left(-\log (\sqrt{2\pi} \cdot \sqrt{\tau^2+1}) - \frac{y_i^2}{2 \, (\tau^2 + 1)} \right) \right) \right] \\
+    &=^1 \sum_{i=1}^{n} \left( E [\mathds{1}_{c_i = 0} | y, \theta^{(t)}] \left(-\log (\sqrt{2\pi}) - \frac{y_i^2}{2} \right)
+    +  E[\mathds{1}_{c_i = 1} | y, \theta^{(t)}] \left(-\log (\sqrt{2\pi} \cdot \sqrt{\tau^2+1}) - \frac{y_i^2}{2 \, (\tau^2 + 1)} \right) \right) \\
+    &=^2 \sum_{i=1}^{n} \left( p_i \left(-\log (\sqrt{2\pi}) - \frac{y_i^2}{2} \right)
+    +  (1-p_i) \left(-\log (\sqrt{2\pi} \cdot \sqrt{\tau^2+1}) - \frac{y_i^2}{2 \, (\tau^2 + 1)} \right) \right) \\
+    &= \sum_{i=1}^{n} \left( p_i \left(-\log (\sqrt{2\pi}) - \frac{y_i^2}{2} \right)
+    +  (1-p_i) \left(-\log (\sqrt{2\pi}) - \frac{1}{2} \log (\tau^2+1) - \frac{y_i^2}{2 \, (\tau^2 + 1)} \right) \right)
+\end{align*}
+
+\noindent
+\textbf{Note:}
+\begin{enumerate}
+    \item Expected value of a sum is the sum of the expected values. We do also have that the only thing that is stochastic in the expectation are the indicator functions. 
+    \item let $p_i = P(C_i = 0 | y, \theta^{(t)})$. This will imply that $P(C_i = 1 | y, \theta^{(t)}) = 1 - P(C_i = 0 | y, \theta^{(t)}) = (1-p_i)$.
+\end{enumerate}
+
+\noindent
+The Q function is taking the expected value of the complete log likelihood given both the observed data and the current estimate of the parameters we want to optimize. \\
+% TODO:
+
+\noindent
+First, we will find the updating algorithm for p
+
+\begin{align*}
+    p^{(t+1)} &= 
+    \frac{\sum_{i=1}^{n} p_i}{\sum_{i=1}^{n} p_i + \sum_{i=1}^{n} (1 - p_i)} 
+    = \frac{\sum_{i=1}^{n} p_i}{n}
+\end{align*}
+where $p_i$ can be calculated as:
+
+\begin{align*}
+    p_i &= P(C_i = 0 | y_i, \theta^{(t)}) \\
+    &=^1 \frac{P(C_i = 0, Y_i = y_i | \theta^{(t)})}{P(Y_i = y_i | \theta^{(t)})} \\
+    &= \frac{P(Y_i = y_i | c_i=0, \theta^{(t)})P(C_i = 0 | \theta^{(t)})}{P(Y_i = y_i | \theta^{(t)})}\\
+    &=^2 \frac{\phi (y_i; 0, 1^2) \cdot p^{(t)}}{\phi (y_i; 0, 1^2) \cdot p^{(t)} + \phi (y_i; 0, {\tau^2}^{(t)} + 1) \cdot (1 - p^{(t)})}\\
+\end{align*}
+which will make the fully algorithm for updating p as:
+
+\begin{align*}
+    p^{(t+1)} 
+    &= \frac{1}{n} \sum_{i=1}^{n} \frac{\phi (y_i; 0, 1^2) \cdot p^{(t)}}{\phi (y_i; 0, 1^2) \cdot p^{(t)} + \phi (y_i; 0, {\tau^2}^{(t)} + 1) \cdot (1 - p^{(t)})}\\
+\end{align*}
+
+\noindent
+\textbf{Note:}
+\begin{enumerate}
+    \item Bayes theorem 
+    \item Law of total probability
+\end{enumerate}
+
+\noindent
+Deriving the estimate for $\tau^2$ by first taking the derivative of the function Q, with respect to $\tau^2$ - and then find the parameter that set the expression to 0. 
+
+\begin{align*}
+    \frac{\partial}{\partial (\tau^2)} Q(\theta, \theta^{(t)}) 
+    &= \sum_{i=1}^{n} (1-p_i) \left(- \frac{1}{2(\tau^2+1)} + \frac{y_i^2}{2 \, (\tau^2 + 1)^2} \right) \\
+    &= \sum_{i=1}^{n} (1-p_i) \left(\frac{y_i^2}{2 \, (\tau^2 + 1)^2} - \frac{1}{2(\tau^2+1)}\right) \stackrel{!}{=} 0
+\end{align*}
+
+\begin{align*}
+    \frac{\partial}{\partial (\tau^2)} Q(\theta, \theta^{(t)}) = 0
+    \quad &\Longrightarrow \quad \sum_{i=1}^{n} (1-p_i) \left(\frac{y_i^2}{2 \, (\tau^2 + 1)^2} - \frac{1}{2(\tau^2+1)}\right) = 0 \\
+    &\Longrightarrow^1 \quad \sum_{i=1}^{n} (1-p_i) \left( y_i^2 - (\tau^2 + 1) \right) = 0 \\
+    &\Longrightarrow \quad \sum_{i=1}^{n} (1-p_i)y_i^2 = \sum_{i=1}^{n} (1-p_i)(\tau^2 + 1) \\
+    &\Longrightarrow \quad \sum_{i=1}^{n} (1-p_i)y_i^2 = (\tau^2 + 1)\sum_{i=1}^{n} (1-p_i) \\
+    &\Longrightarrow \quad \frac{\sum_{i=1}^{n} (1-p_i)y_i^2}{\sum_{i=1}^{n} (1-p_i)} = (\tau^2 + 1) \\
+    &\Longrightarrow \quad \tau^2 =  \frac{\sum_{i=1}^{n} (1-p_i)y_i^2}{\sum_{i=1}^{n} (1-p_i)} - 1 \\
+\end{align*}
+
+The updating algorithm for $\tau^2$ will then be:
+\begin{align}
+    {\tau^2}^{(t+1)} =  \frac{\sum_{i=1}^{n} (1-p_i)y_i^2}{\sum_{i=1}^{n} (1-p_i)} - 1
+\end{align}
+
+
+\noindent
+\textbf{Note:}
+\begin{enumerate}
+    \item multiplied both sides with $(\tau^2 + 1)/2$
+\end{enumerate}
+
+
+\section{Exercise 3}
+
+
+\section{Bibliography}
+\printbibliography[heading=none] 
+
+\end{document}
