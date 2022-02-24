@@ -1,0 +1,989 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{esint}
+\usepackage{amsmath}
+\usepackage{bbm}
+\usepackage{tikz}
+\usepackage{mathtools}
+\usepackage{ dsfont }
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage[font={small,it}]{caption}
+\usepackage{caption}
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage[euler]{textgreek}
+\graphicspath{{./plots/}}
+\usepackage{biblatex}
+\addbibresource{reff.bib}
+\usepackage{caption}
+\usepackage{subfig}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage[font=small,labelfont=bf]{caption}
+\setcounter{secnumdepth}{5}
+\usepackage[autocite=footnote,notetype=foot+end,style=authortitle-ibid]{biblatex}
+\usepackage{amsmath}
+\DeclareMathOperator{\sign}{sign}
+\usepackage{geometry}
+ \geometry{
+ a4paper,
+ total={150mm,230mm},
+ left=30mm,
+ top=30mm,
+ }
+\usepackage{amsmath}
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+% want to have letters as subsection
+\renewcommand{\thesubsection}{\thesection.\alph{subsection}}
+
+\usepackage{mathtools}
+
+\newcommand{\expect}{\operatorname{E}\expectarg}
+\DeclarePairedDelimiterX{\expectarg}[1]{[}{]}{%
+  \ifnum\currentgrouptype=16 \else\begingroup\fi
+  \activatebar#1
+  \ifnum\currentgrouptype=16 \else\endgroup\fi
+}
+
+\newcommand{\innermid}{\nonscript\;\delimsize\vert\nonscript\;}
+\newcommand{\activatebar}{%
+  \begingroup\lccode`\~=`\|
+  \lowercase{\endgroup\let~}\innermid 
+  \mathcode`|=\string"8000
+}
+
+\title{Compulsory exercise - STK4051}
+\author{Øystein Høistad Bruce}
+\date{February 2022}
+
+\begin{document}
+\maketitle
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=8.5cm]{uio.jpeg}
+\end{figure}
+
+\begin{center}
+    \Large
+    Department of Mathematics 
+    \normalsize
+\end{center}
+
+
+\newpage
+
+\tableofcontents
+\newpage
+
+\section{Exercise 1 (Lp-regularization)}
+Simplified regression model:
+
+\begin{align}
+\label{simple_regression}
+    y_i = \beta_i + \epsilon_i \quad i=1, ..., n
+\end{align}
+where $y_i$ is the data, $\beta_i$ are the parameters, and $\epsilon_i \sim \mathcal{N}(0, 1^2) $ is an error term. The probability distribution of $\epsilon_i$ is:
+
+\begin{align}
+    p(\epsilon_i) = \frac{1}{\sqrt{2\pi}} \, \exp{\{-\epsilon_i^2/2\}} \qquad -\infty < \epsilon_i < \infty
+\end{align}
+
+\subsection{Maximum likelihood estimator} 
+
+\textbf{Derive the maximum likelihood estimator for $\beta_i$, i = 1, ..., n}
+
+The probability of getting $y_i$ (given current estimates on beta) is the probability that a random sample from the standard normal distribution to be $y_i - \beta_i$. The likelihood can then be written as:
+
+\begin{align*}
+    L(\theta | y) 
+    &= \prod_{i=1}^{n} p(y_i - \beta_i)
+\end{align*}
+further, we get the following expression for the log-likelihood:
+
+\begin{align*}
+    l(\theta | y)
+    &= \log \, \{ L(\theta | y) \}
+    = \log \, \bigg\{ \prod_{i=1}^{n} p(y_i - \beta_i) \bigg\} \\
+    &= \sum_{i=1}^{n} \log \{ p(y_i - \beta_i)\} \\
+    &= \sum_{i=1}^{n} -\log \{ \sqrt{2 \pi} \} + \frac{(y_i - \beta_i)^2}{2}
+\end{align*}
+\noindent
+Now, we are ready to find the maximum likelihood estimator for $\beta_i$, by finding the derivative of the log-likelihood function w.r.t. $\beta_i$ and set it equal to zero. 
+
+\begin{align*}
+    \frac{\partial l(\theta | y)}{\partial \beta_i}
+    &= \frac{2(y_i - \beta_i)}{2} = (y_i - \beta_i) \stackrel{!}{=} 0
+\end{align*}
+\noindent
+The maximum likelihood estimator, will then be the following:
+\begin{align}
+    \hat{\beta_i} = y_i \qquad i = 1, ..., n
+\end{align}
+
+
+\subsection{Penalized least squares}
+An alternative estimator is derived using a penalized least squares, by solving the optimization problem:
+
+\begin{align}
+    \min_{\beta} \, \{ -l(\beta | y) + \frac{\gamma}{p} \| \beta \|_p^p \}
+\end{align}
+where $l$ is the log-likelihood, $\gamma$ is a regularization parameter and
+
+\begin{align*}
+    \| \beta \|_p^p = \sum_{i=1}^{n} |\beta_i|^p
+\end{align*}
+
+\noindent
+\textbf{Show that}
+\begin{align}
+    f_{p, \gamma} (\beta_i) = \beta_i + \gamma \cdot \sign (\beta_i) |\beta_i|^{p-1}
+\end{align}
+where $f_{p, y}(\beta_i)$ should satisfy 
+
+\begin{align}
+\label{function_f_equal_y}
+    f_{p, y}(\beta_i) = y_i \quad i = 1, ..., n
+\end{align}
+
+\noindent
+\textbf{Answer}\\
+We will first find the derivative of the expression we want to minimize w.r.t. $\beta_i$, then set the expression to 0. 
+
+\begin{align*}
+    \frac{\partial}{\partial \beta_i} \left( -l(\beta | y) + \frac{\gamma}{p} \| \beta \|_p^p \right)
+    &= -(y_i - \beta_i) + \frac{\gamma}{p} \, p |\beta_i|^{p-1} 
+    \, \frac{\partial |\beta_i|}{\beta_i} \\
+    &= -y_i + \beta_i + \gamma |\beta_i|^{p-1} 
+    \, \frac{\partial |\beta_i|}{\beta_i} \\
+    &= -y_i + \beta_i + \gamma |\beta_i|^{p-1} 
+    \, \sign ( \beta_i ) \stackrel{!}{=} 0
+\end{align*}
+\noindent
+Then, we solve for $y_i$ and get the result we were gonna prove:
+
+\begin{align*}
+    y_i = \beta_i + \gamma |\beta_i|^{p-1} 
+    \, \sign ( \beta_i ) \qquad i = 1, ..., n
+\end{align*}
+
+\subsection{Plotting the function} 
+Let $\gamma = \{ 1, 0.2 \}$, plot the function $f_{p, \gamma} (\beta)$ for $p = \{ 1.1, 2, 5, 100\}$ on the interval $[-5, 5]$. Give an interpretation of the result. The code for doing this is attached in the appendix section \ref{exercise_1_c_appendix}.
+
+\captionsetup{justification=centering}
+\begin{figure}[H]
+    \begin{minipage}{.5\textwidth}
+      \centering
+      \includegraphics[height=7.2cm, width=7.4cm]{img_ex_1_c_gamma_0_2.png}
+      \captionof{figure}{}
+      \label{fig: img_ex_1c_gamma_02}
+    \end{minipage}%
+    \hspace{\fill}
+    \begin{minipage}{.5\textwidth}
+      \flushright
+      \centering
+      \includegraphics[height=7.2cm, width=7.4cm]{img_exercise_1_c_gamma_1.png}
+      \captionsetup{justification=centering}
+      \captionof{figure}{}
+      \label{fig: img_ex_1c_gamma_1}
+    \end{minipage}
+\end{figure}
+where the yellow line is $f(\beta) = \beta$ \\
+
+\noindent
+Plot the inverse function by flipping the order of the arguments in the plotting function. Give an interpretation of the result. #TODO
+
+\subsection{Bisection method}
+Implement a function which finds the root of expression (\ref{function_f_equal_y}). The script of doing this is added in the appendix section \ref{exercise_1_d_appendix}. We will find the optimal $\beta$ values for each $y \in [-5, 5]$ with a model of $\gamma = 1$ and $p = \{ 1.1, 2, 100\} $. In general, good starting values for the bisection method will be s.t. the function values (of the function we want to find the root of) are one negative and one positive. Then, you are guaranteed a root of the function. \\
+\noindent
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=8.5cm]{img_ex_1_d.png}
+    \captionof{figure}{solution of $\beta$ given y with bisection method}
+    \label{img_ex_1c_gamma_1}
+\end{figure}
+
+
+\subsection{Use data on the results}
+Now, we are ready for doing the different estimations with actual data. The data we are given are y, and the ground truth values for beta, $\beta_{GT}$. The script are attached in the section \ref{exercise_1_e_appendix}. The results are also achieved from it. \\
+
+\noindent
+Firstly, we will look at the penalized regression. We want to compute $\hat{\beta}_{\gamma, p}$ with $\gamma = 1, p = \{ 1.1, 2, 100\}$ and get the following residual sum of squares:
+
+\begin{center}
+\begin{tabular}{||c c c||} 
+ \hline
+ $p$-values &  penalized regression & Alternative method \\ [0.5ex] 
+ \hline\hline
+ 1.1 & 273.97 & 5785.65 \\ 
+ \hline
+ 2 & 1256.53 & 2425.73\\
+ \hline
+ 100 & 3786.62 & 333.37 \\ [1ex] 
+ \hline
+\end{tabular}
+\end{center}
+where the alternative method is another way of achieve an estimater. That is:
+
+\begin{align*}
+    \hat{\beta}^{\text{Alt}}_{1, 100} = y - \hat{\beta}_{1, 100}
+\end{align*}
+
+\noindent
+For the MLE estimator, we get the residual sum of squares to be $998.42$. \\
+
+\noindent
+So, in this case the penalized regression method will get less residual sum of squares, and will then be the best estimators of all of the methods. Penalized regression with $p = 1.1$ (given that $\gamma = 1$) is the best option (of the ones we compared), then secondly is the alternative method with $p = 100$. 
+
+
+\subsection{ADMM algorithm}
+In the linear regression problem, \\
+\noindent
+TO BE CONTINUED
+
+
+\section{Exercise 2 (EM-algorithm)}
+In this exercise, we will be using the data in the file \textit{sparseDataWithErrors.dat} \\
+
+\noindent
+For this exercise we will assume that $Y_i \quad i = 1, ..., n$ are independent and identically distributed according to the mixture distribution:
+
+\begin{align}
+\label{mixture_distribution}
+    f(y_i) = p \cdot \phi(y_i; 0, 1^2) + (1-p) \cdot \phi (y_i; 0, \tau ^2 + 1^2)
+\end{align}
+where $\phi(y_i; \mu, \sigma^2)$ is the normal density with mean $\mu$ and variance $\sigma ^2$. We will now consider estimation of the parameters $\theta = (p, \tau ^2)$.
+
+\subsection{Expression for the likelihood of $\theta$}
+The likelihood of $\theta$ can be expressed as follows:
+
+\begin{align*}
+    L(\theta | y) &= \prod_{i=1}^{n} f(y_i) \\
+    &= \prod_{i=1}^{n} \left[ p \cdot \phi(y_i; 0, 1^2) + (1-p) \cdot \phi (y_i; 0, \tau ^2 + 1^2) \right]
+\end{align*}
+
+\subsection{Complete log-likelihood}
+
+\textbf{Introduce the variable $C_i$ which identifies the model $y_i$ belongs to. Give an expression for the complete log-likelihood using the pairs $(C_i, y_i)_{i=1}^{n}$}\\
+
+\noindent
+We know that we can belong to either one of the two classes $\{ 0, 1\}$. Let class 0 be the data from the normal distribution with variance 1, and class 1 be the other one. \\
+
+\noindent
+Starting up with an expression for the complete likelihood:
+\begin{align*}
+    L_{\text{comp}}(\theta | (C, y)) = \prod_{i=1}^{n} \left[ \mathds{1}_{c_i = 0} \cdot \phi(y_i; 0, 1^2) + \mathds{1}_{c_i = 1} \cdot \phi (y_i; 0, \tau ^2 + 1^2) \right]
+\end{align*}
+
+\noindent
+Then we get the following for the complete log-likelihood:
+\begin{align*}
+    l_{\text{comp}}(\theta | (C, y)) &= \log \{ L_{\text{comp}}(\theta | (C, y)) \} \\
+    &= \sum_{i=1}^{n} \left[ \mathds{1}_{c_i = 0} \log \{ \phi(y_i; 0, 1^2) \} + \mathds{1}_{c_i = 1} \log \{ \phi (y_i; 0, \tau ^2 + 1^2) \} \right] \\
+    &= \sum_{i=1}^{n} \left[ \mathds{1}_{c_i = 0} \left(-\log (\sqrt{2\pi}) - \frac{y_i^2}{2} \right)
+    + \mathds{1}_{c_i = 1} \left(-\log (\sqrt{2\pi} \cdot \sqrt{\tau^2+1}) - \frac{y_i^2}{2 \, (\tau^2 + 1)} \right) \right]
+\end{align*}
+
+\subsection{Expression for $Q(\theta, \theta^{(t)})$}
+\textbf{Give an expression for $Q(\theta, \theta^{(t)})$, what is the interpretation of $Q(\theta, \theta^{(t)})$. Derive the estimates for $\theta =  (p, \tau^2)$, using $Q(\theta, \theta^{(t)})$.}
+
+\begin{align*}
+    Q(\theta, \theta^{(t)}) 
+    &= E [ \, l_{\text{comp}} | y, \theta^{(t)} ] \\
+    &= E \left[ \sum_{i=1}^{n} \left( \mathds{1}_{c_i = 0} \left(-\log (\sqrt{2\pi}) - \frac{y_i^2}{2} \right)
+    + \mathds{1}_{c_i = 1} \left(-\log (\sqrt{2\pi} \cdot \sqrt{\tau^2+1}) - \frac{y_i^2}{2 \, (\tau^2 + 1)} \right) \right) \right] \\
+    &=^1 \sum_{i=1}^{n} \left( E [\mathds{1}_{c_i = 0} | y, \theta^{(t)}] \left(-\log (\sqrt{2\pi}) - \frac{y_i^2}{2} \right)
+    +  E[\mathds{1}_{c_i = 1} | y, \theta^{(t)}] \left(-\log (\sqrt{2\pi} \cdot \sqrt{\tau^2+1}) - \frac{y_i^2}{2 \, (\tau^2 + 1)} \right) \right) \\
+    &=^2 \sum_{i=1}^{n} \left( p_i \left(-\log (\sqrt{2\pi}) - \frac{y_i^2}{2} \right)
+    +  (1-p_i) \left(-\log (\sqrt{2\pi} \cdot \sqrt{\tau^2+1}) - \frac{y_i^2}{2 \, (\tau^2 + 1)} \right) \right) \\
+    &= \sum_{i=1}^{n} \left( p_i \left(-\log (\sqrt{2\pi}) - \frac{y_i^2}{2} \right)
+    +  (1-p_i) \left(-\log (\sqrt{2\pi}) - \frac{1}{2} \log (\tau^2+1) - \frac{y_i^2}{2 \, (\tau^2 + 1)} \right) \right)
+\end{align*}
+
+\noindent
+\textbf{Note:}
+\begin{enumerate}
+    \item Expected value of a sum is the sum of the expected values. We do also have that the only thing that is stochastic in the expectation are the indicator functions. 
+    \item let $p_i = P(C_i = 0 | y, \theta^{(t)})$. This will imply that $P(C_i = 1 | y, \theta^{(t)}) = 1 - P(C_i = 0 | y, \theta^{(t)}) = (1-p_i)$.
+\end{enumerate}
+
+\noindent
+The Q function is taking the expected value of the complete log likelihood given both the observed data and the current estimate of the parameters we want to optimize. \\
+% TODO:
+
+\noindent
+First, we will find the updating algorithm for p
+
+\begin{align*}
+    p^{(t+1)} &= 
+    \frac{\sum_{i=1}^{n} p_i}{\sum_{i=1}^{n} p_i + \sum_{i=1}^{n} (1 - p_i)} 
+    = \frac{\sum_{i=1}^{n} p_i}{n}
+\end{align*}
+where $p_i$ can be calculated as:
+
+\begin{align*}
+    p_i &= P(C_i = 0 | y_i, \theta^{(t)}) \\
+    &=^1 \frac{P(C_i = 0, Y_i = y_i | \theta^{(t)})}{P(Y_i = y_i | \theta^{(t)})} \\
+    &= \frac{P(Y_i = y_i | C_i=0, \theta^{(t)})P(C_i = 0 | \theta^{(t)})}{P(Y_i = y_i | \theta^{(t)})}\\
+    &=^2 \frac{\phi (y_i; 0, 1^2) \cdot p^{(t)}}{\phi (y_i; 0, 1^2) \cdot p^{(t)} + \phi (y_i; 0, {\tau^2}^{(t)} + 1) \cdot (1 - p^{(t)})}\\
+\end{align*}
+which will make the fully algorithm for updating p as:
+
+\begin{align*}
+    p^{(t+1)} 
+    &= \frac{1}{n} \sum_{i=1}^{n} \frac{\phi (y_i; 0, 1^2) \cdot p^{(t)}}{\phi (y_i; 0, 1^2) \cdot p^{(t)} + \phi (y_i; 0, {\tau^2}^{(t)} + 1) \cdot (1 - p^{(t)})}\\
+\end{align*}
+
+\noindent
+\textbf{Note:}
+\begin{enumerate}
+    \item Bayes theorem 
+    \item Law of total probability
+\end{enumerate}
+
+\noindent
+Deriving the estimate for $\tau^2$ by first taking the derivative of the function Q, with respect to $\tau^2$ - and then find the parameter that set the expression to 0. 
+
+\begin{align*}
+    \frac{\partial}{\partial (\tau^2)} Q(\theta, \theta^{(t)}) 
+    &= \sum_{i=1}^{n} (1-p_i) \left(- \frac{1}{2(\tau^2+1)} + \frac{y_i^2}{2 \, (\tau^2 + 1)^2} \right) \\
+    &= \sum_{i=1}^{n} (1-p_i) \left(\frac{y_i^2}{2 \, (\tau^2 + 1)^2} - \frac{1}{2(\tau^2+1)}\right) \stackrel{!}{=} 0
+\end{align*}
+
+\begin{align*}
+    \frac{\partial}{\partial (\tau^2)} Q(\theta, \theta^{(t)}) = 0
+    \quad &\Longrightarrow \quad \sum_{i=1}^{n} (1-p_i) \left(\frac{y_i^2}{2 \, (\tau^2 + 1)^2} - \frac{1}{2(\tau^2+1)}\right) = 0 \\
+    &\Longrightarrow^1 \quad \sum_{i=1}^{n} (1-p_i) \left( y_i^2 - (\tau^2 + 1) \right) = 0 \\
+    &\Longrightarrow \quad \sum_{i=1}^{n} (1-p_i)y_i^2 = \sum_{i=1}^{n} (1-p_i)(\tau^2 + 1) \\
+    &\Longrightarrow \quad \sum_{i=1}^{n} (1-p_i)y_i^2 = (\tau^2 + 1)\sum_{i=1}^{n} (1-p_i) \\
+    &\Longrightarrow \quad \frac{\sum_{i=1}^{n} (1-p_i)y_i^2}{\sum_{i=1}^{n} (1-p_i)} = (\tau^2 + 1) \\
+    &\Longrightarrow \quad \tau^2 =  \frac{\sum_{i=1}^{n} (1-p_i)y_i^2}{\sum_{i=1}^{n} (1-p_i)} - 1 \\
+\end{align*}
+
+The updating algorithm for $\tau^2$ will then be:
+\begin{align}
+    {\tau^2}^{(t+1)} =  \frac{\sum_{i=1}^{n} (1-p_i)y_i^2}{\sum_{i=1}^{n} (1-p_i)} - 1
+\end{align}
+
+
+\noindent
+\textbf{Note:}
+\begin{enumerate}
+    \item multiplied both sides with $(\tau^2 + 1)/2$
+\end{enumerate}
+
+\subsection{Implementation of functions}
+\textbf{Implement the solution you derived in (c) as a function, and apply it to the data. What is a good initialization} \\
+
+\noindent
+You can see the implementation in the appendix \ref{exercise_2_d_appendix}. A good initialization is to have some $0<p<1$, and $\tau^2 \neq 1$ so we do not have two models with same distribution and parameters. \\
+
+\noindent
+After running the script, we can see that the optimal values converged towards $(p, /tau^2) = (0.964656, 112.156166)$.
+
+
+\subsection{Bootstrap estimate (uncertainty)}
+\textbf{e) Compute a bootstrap estimate of the uncertainty of the two parameters, using the functions from (d). Sample $B=1000$ times and display scatter plot of the values} \\
+
+\noindent
+The bootstrap method implementation can be looked up in the appendix \ref{exercise_2_e_appendix}. The bootstrap estimate of the uncertainty are: #TODO, add also scatter plot. 
+
+\subsection{Observed information matrix}
+\textbf{Compute the observed information matrix. How can you use the observed information matrix to give an uncertainty estimate for $\theta$? Compare the result to (e)} \\
+
+\noindent
+The observed information matrix can be found by:
+\begin{align*}
+\renewcommand\arraystretch{2.0}
+    J_Y(\theta) = -
+    \begin{pmatrix}
+    \frac{\partial^2 l(\theta)}{\partial p^2} \quad 
+    \frac{\partial^2 l(\theta)}{\partial p \partial (\tau^2)}\\
+    \frac{\partial^2 l(\theta)}{\partial (\tau^2) \partial p } \quad \frac{\partial^2 l(\theta)}{\partial (\tau^2)^2}
+    \end{pmatrix}
+\end{align*}
+\noindent
+Now, we need to have the expression in the EM-algorithm which will include $p$:
+
+\begin{align*}
+    l(\theta) = \sum_{i=1}^{n} \mathds{1}_{C_i = 0}[\log(p) + \log(\phi(y_i;0, 1))] + \mathds{1}_{C_i = 1}[\log(1 - p) + \log(\phi(y_i;0, \tau^2 + 1))]
+\end{align*}
+Then we will get a kind of similar $Q$ as before:
+\begin{align*}
+    Q(\theta | \theta^{(t)}) 
+    &= \sum_{i=1}^{n} \left( p_i \left[ \log(p) -\log (\sqrt{2\pi}) - \frac{y_i^2}{2} \right]
+    +  (1-p_i) \left[ \log(1-p) -\log (\sqrt{2\pi}) - \frac{1}{2} \log (\tau^2+1) - \frac{y_i^2}{2 \, (\tau^2 + 1)} \right] \right)
+\end{align*}
+
+\noindent
+\textbf{Note:} We have that $p_i = P(C_i = 0 | y_i, \theta^{(t)})$ as before. \\
+
+\noindent
+Now, we need to do some partial derivatives to get the information matrix. 
+
+\begin{align*}
+    \frac{\partial}{\partial (\tau^2)} Q(\theta, \theta^{(t)}) 
+    &= \sum_{i=1}^{n} (1-p_i) \left(- \frac{1}{2(\tau^2+1)} + \frac{y_i^2}{2 \, (\tau^2 + 1)^2} \right) \\
+    &= \sum_{i=1}^{n} (1-p_i) \left(\frac{y_i^2}{2 \, (\tau^2 + 1)^2} - \frac{1}{2(\tau^2+1)}\right)
+\end{align*}
+\begin{align*}
+    \frac{\partial^2}{\partial (\tau^2)^2} Q(\theta, \theta^{(t)}) 
+    &= \sum_{i=1}^{n} (1-p_i) \left(\frac{1}{2(\tau^2+1)^2} - \frac{y_i^2}{ \, (\tau^2 + 1)^3} \right)
+\end{align*}
+\begin{align*}
+    \frac{\partial^2}{\partial (\tau^2) \partial p} Q(\theta, \theta^{(t)}) 
+    &= \frac{\partial}{\partial p} \sum_{i=1}^{n} (1-p_i) \left(\frac{1}{2(\tau^2+1)^2} - \frac{y_i^2}{ \, (\tau^2 + 1)^3} \right) \\
+    & = 0
+\end{align*}
+\begin{align*}
+    \frac{\partial}{\partial p} Q(\theta, \theta^{(t)}) 
+    &= \sum_{i=1}^{n} \left[ \frac{p_i}{p} - \frac{1-p_i}{1-p} \right] \\
+\end{align*}
+\begin{align*}
+    \frac{\partial^2}{\partial p^2} Q(\theta, \theta^{(t)}) 
+    &= \sum_{i=1}^{n} \left[ - \frac{p_i}{p^2} - \frac{1-p_i}{(1-p)^2} \right] \\
+    &=  - \frac{1}{p} \sum_{i=1}^{n} p_i - \frac{1}{1-p} \sum_{i=1}^{n} (1-p_i) \\
+    &=  - \frac{1}{p^2} n p^{(t)} - \frac{1}{(1-p)^2} n (1 - p^{(t)})
+\end{align*}
+
+\newpage
+\noindent
+The code for computing the observed information matrix will be located at the appendix \ref{exercise_2_f_appendix}. # TODO: You can use the inverse of the information matrix to give an uncertainty estimate for the parameters, since the inverse of the information matrix is the covariance matrix. \\
+
+\noindent
+The computed observed information matrix and covariance matrix are as follows:
+# TODO: add it. 
+
+\subsection{Grid computation of likelihood}
+
+\section{Exercise 3}
+Assuming that the data $Y_i$ are the same as in (\ref{simple_regression}) and that $y_i$, follows mixture distribution as in (\ref{mixture_distribution}).
+
+\subsection{Prove some expressions}
+\textbf{Use a Bayesian interpretation of $\beta_i$ and argue that}
+\begin{align*}
+    P(\beta_i=0|C_i=0)=1 \quad \text{and} \quad f(\beta_i | C_i = 1) = \phi(\beta_i;0,\tau^2)
+\end{align*}
+
+\noindent
+\textbf{Answer:} We have that 
+
+\begin{align*}
+    Y_i &= \beta_i + \mathcal{E}_i \\
+    &\implies \quad \; \, Y_i | (C_i = 0) = \beta_i | (C_i = 0) + \mathcal{E}_i | (C_i = 0) \\
+    &\implies^1 \quad Y_i | (C_i = 0) = \beta_i | (C_i = 0) + \mathcal{E}_i \\
+\end{align*}
+\noindent
+\textbf{Note:}
+\begin{enumerate}
+    \item $\mathcal{E}_i$ is independent of the class
+\end{enumerate}
+
+where we have that the left side of the equation are normal distributed with mean 0 and standard deviation 1. The $\mathcal{E}_i$'s
+have the same probability density. Then, by assuming that $\beta_i$ and $\mathcal{E}_i$ are independent, it follows that $\beta_i \sim \mathcal{N}(0, 0)$ - have a density of the dirac delta function. This will imply that $P(\beta_i=0|C_i=0)=1$, same as saying that $\beta_i = 0$ (constant), if we are looking at class 0. \\
+
+\noindent
+Equivalently for the second case:
+\begin{align*}
+    Y_i &= \beta_i + \mathcal{E}_i \\
+    &\implies \quad \; \, Y_i | (C_i = 1) = \beta_i | (C_i = 1) + \mathcal{E}_i | (C_i = 1) \\
+    &\implies^1 \quad Y_i | (C_i = 1) = \beta_i | (C_i = 1) + \mathcal{E}_i \\
+\end{align*}
+\noindent
+
+here the left hand side will be normal distributed with mean 0 and variance $\tau^2 + 1$. $\mathcal{E}_i$ will have the same distribution as always (that is the normal distribution with mean 0 and standard deviation 1). We want to find the distribution of $\beta_i | (C_i = 1)$. We need to have the addition rule of normal distributed variables in mind (as in the previous case). So again, by assuming that $\mathcal{E}_i$ and $\beta_i | (C_i = 1)$ are independent, the only distribution that satisfy this equation will be $\beta_i | (C_i = 1) \sim \mathcal{N}(0, \tau^2)$.
+
+\newpage
+\noindent
+\textbf{Also, give an expression for $P(\beta_i = 0 | y_i = y)$}
+
+\begin{align*}
+    P(\beta_i = 0 | y_i = y)
+    &=^1 P(\beta_i = 0 | C_i = 0, y_i = y)P(C_i = 0 | y_i = y) \\
+    & \quad + P(\beta_i = 0 | C_i = 1, y_i = y)P(C_i = 1 | y_i = y) \\
+    &=^2
+    \frac{P(\beta_i = 0, y_i = y | C_i = 0)}{P(y_i = y | C_i = 0)}
+    \frac{P(y_i = y | C_i = 0)P(C_i = 0)}{P(y_i = y)} \\
+    & \quad + 
+    \frac{P(\beta_i = 0, y_i = y | C_i = 1)}{P(y_i = y | C_i = 1)}
+    \frac{P(y_i = y | C_i = 1)P(C_i = 1)}{P(y_i = y)} \\
+    &= P(\beta_i = 0, y_i = y | C_i = 0)
+    \frac{P(C_i = 0)}{P(y_i = y)} \\
+    & \quad + P(\beta_i = 0, y_i = y | C_i = 1)
+    \frac{P(C_i = 1)}{P(y_i = y)} \\
+    &=^3 P(\beta_i = 0, \varepsilon_i = y | C_i = 0)
+    \frac{p}{P(y_i = y)} \\
+    & \quad + P(\beta_i = 0, \varepsilon_i = y | C_i = 1)
+    \frac{(1-p)}{P(y_i = y)} \\
+    &=^4 P(\beta_i = 0 | C_i = 0)P(\varepsilon_i = y | C_i = 0)
+    \frac{p}{P(y_i = y)} \\
+    & \quad + P(\beta_i = 0 | C_i = 1)P(\varepsilon_i = y | C_i = 1)
+    \frac{(1-p)}{P(y_i = y)} \\
+    &=^5 \phi(y; 0, 1)
+    \frac{p}{P(y_i = y)} 
+    + \phi(y; 0, \tau^2)\phi(y; 0, 1)
+    \frac{(1-p)}{P(y_i = y)} \\
+    &=^6 \frac{\phi(y; 0, 1)}{P(y_i = y | C_i = 0)P(C_i = 0) + P(y_i = y | C_i = 1)P(C_i = 1)} (p + (1-p)\phi(y; 0, \tau^2)) \\
+    &= \frac{\phi(y; 0, 1)}{\phi(y; 0, 1)p + \phi(y; 0, \tau^2 + 1)(1-p)} (p + (1-p)\phi(y; 0, \tau^2))
+\end{align*}
+
+\noindent
+\textbf{Note:}
+\begin{enumerate}
+    \item Rule of total probability
+    \item Bayes' rule on all expressions
+    \item assuming that the data are on the form $y_i = \beta_i + \varepsilon_i$
+    \item independence of $\beta_i$ and $\varepsilon_i$
+    \item adding the known probabilities
+    \item Rule of total probability
+\end{enumerate}
+
+\subsection{Conditional expectation}
+
+Show that:
+\begin{align*}
+    E [\beta_i | y_i = y] \stackrel{!}{=} P(C_i = 1 | y_i = y) E [\beta_i | y_i = y, C_i = 0]
+\end{align*}
+
+\noindent
+\textbf{Answer:}
+\begin{align*}
+    E [\beta_i | y_i = y] 
+    &= \int_{-\infty}^{\infty} \beta_i[f(\beta_i | y_i = y)] \, d\beta_i \\
+    &=^1 \int_{-\infty}^{\infty} \beta_i[f(\beta_i | y_i = y, C_i = 0) P(C_i = 0 | y_i = y) + f(\beta_i | y_i = y, C_i = 1)P(C_i = 1 | y_i = y)] \, d\beta_i \\
+    &= \int_{-\infty}^{\infty} \beta_i[f(\beta_i | y_i = y, C_i = 0) P(C_i = 0 | y_i = y)] \, d\beta_i  + \int_{-\infty}^{\infty} \beta_i[f(\beta_i | y_i = y, C_i = 1)P(C_i = 1 | y_i = y)] \, d\beta_i \\
+    &= \left[ P(C_i = 0 | y_i = y)\int_{-\infty}^{\infty} \beta_i\mathds{1}_{\beta_i = 0} \, d\beta_i \right] + P(C_i = 1 | y_i = y) E [\beta_i | y_i = y, C_i = 0] \\
+    &=^2 0 + P(C_i = 1 | y_i = y) E [\beta_i | y_i = y, C_i = 1] \\
+    &= P(C_i = 1 | y_i = y) E [\beta_i | y_i = y, C_i = 1] \\
+\end{align*}
+
+\textbf{Note:}
+\begin{enumerate}
+    \item Total probability
+    \item Integration over 1 point (of value 1), is 0. 
+\end{enumerate}
+
+\subsection{Find estimator using a data set}
+
+\section{Exercise 4 (Combinatorial optimization)}
+\label{exercise_4}
+We will try to minimize the total time spent on delivering a product to 20 different cities.
+
+\subsection{Simulated annealing}
+\label{exercise_4_a}
+
+\noindent
+The implementation of the simulated annealing algorithm can be seen in the appendix section \ref{exercise_4a_appendix}. The results from the code were these figures: \\
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=8.5cm]{img_plot_ex_4a_improvement.png}
+    \captionof{figure}{the distance of the current solution over time}
+    \label{img_4_a_improvement_over_time}
+\end{figure}
+
+
+\captionsetup{justification=centering}
+\begin{figure}[H]
+    \begin{minipage}{.5\textwidth}
+      \centering
+      \includegraphics[height=7.2cm, width=7.8cm]{img_4a_now.png}
+      \captionof{figure}{The best route in current simulation (distance: 4.045892)}
+      \label{fig: img_4a_now}
+    \end{minipage}%
+    \hspace{\fill}
+    \begin{minipage}{.5\textwidth}
+      \flushright
+      \centering
+      \includegraphics[height=7.2cm, width=7.8cm]{img_4a_best.png}
+      \captionsetup{justification=centering}
+      \captionof{figure}{The all time best route \\ (distance: 3.866708)}
+      \label{fig: img_4a_best}
+    \end{minipage}
+\end{figure}
+
+
+
+\noindent
+I used this neighborhood in the search for a optimum:
+\begin{align*}
+    \mathcal{N}(\theta) = \{ \theta ^* \, | \, \exists \, k, j \; \text{s.t.} \;  \theta^*_k = \theta_j , \,  \theta^*_j = \theta_k
+    \quad \text{and} \quad \theta^*_i = \theta_i \: \forall \: i \neq k, j \}
+\end{align*}
+which is an mathematical expression for switching two of the entries in the sequence. The algorithm can reach each state with this neighborhood property. Given a state we want to reach, we can start by switching the first entry to the first entry in the state we want to reach (by switching the elements in our current sequence), then we will go one with this procedure until we reach the end of the sequence. \\
+
+\noindent
+The cooling schedule I will be using is:
+
+\begin{align*}
+\label{cooling_schedule_simulated_annealing}
+    \alpha(t) = 100/(t+1)
+\end{align*}
+where t in this context will be the iteration of the algorithm. 
+
+\subsection{TABU search}
+\label{exercise_4_b}
+Implementation of the algorithm will be found in the appendix (\ref{exercise_4b_appendix}). \\
+
+\noindent
+TABU search and simulated annealing are able to get to worse states, while the combinatorial optimization algorithm steepest descent will be monotonic since it will always improve (or stand at its current guess). Here are the results from the script, that shows us that this algorithm will go (very often) to worse solutions for finding a better optimum (after more iterations). \\
+
+\noindent
+The results from the script are as follows:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=8.5cm]{img_4b_improvement.png}
+    \captionof{figure}{the distance of the current solution over time}
+    \label{img_4b_improvement}
+\end{figure}
+
+\captionsetup{justification=centering}
+\begin{figure}[H]
+    \begin{minipage}{.5\textwidth}
+      \centering
+      \includegraphics[height=7.2cm, width=7.8cm]{img_4b_now.png}
+      \captionof{figure}{The best route in current simulation (distance: 4.164201)}
+      \label{fig: img_4b_now}
+    \end{minipage}%
+    \hspace{\fill}
+    \begin{minipage}{.5\textwidth}
+      \flushright
+      \centering
+      \includegraphics[height=7.2cm, width=7.8cm]{img_4b_best.png}
+      \captionsetup{justification=centering}
+      \captionof{figure}{The all time best route \\ (distance: 3.770697)}
+      \label{fig: img_4b_best}
+    \end{minipage}
+\end{figure}
+
+
+
+\subsection{Interpretation to the boss}
+\label{exercise_4_c}
+Manager: "Your current solution, will it be the optimal one?" \\
+\\
+\noindent
+Øystein: "Nah, don't think so. It's like $20! = 2.43*10^{18}$ solutions to this problem, so I will not guarantee that there will not be a better solution to the optimal route" \\
+\\
+\noindent
+Manager: "I knew it, I shouldn't hire you! \\
+\\
+\noindent
+Øystein: "Ey boss, I can assure you that the solution I have proposed will be near the optimal solution tho. I have run the problem several times with different initial guesses, and different combinatorial optimization algorithm. My confidence on this result are based on how frequently it has been converged to, and if it converged to something else - it has always been a worse result. It's easy to see that the route is efficient with respect to the map, by reasoning." \\
+\\
+\noindent
+Manager: "Oh, sorry for doubting you. You will get a raise soon." \\
+\\
+\noindent
+Øystein: "I'm just doing my job sir"
+
+\subsection{Another lorry to help with the product transporting}
+\label{exercise_4_d}
+
+There are many solutions to this problem, but I have decided to go with the following algorithm. In each iteration, there are three possibilities (with equal probability to happen):
+
+\begin{enumerate}
+    \item Lorry 1 switches two destinations 
+    \item Lorry 2 switches two destinations
+    \item Switching between the lorries (one destination)
+\end{enumerate}
+Let $(\theta^{(1)}, \theta^{(2)})$ be the routes for the lorries. With the neighbourhoods below (\ref{first_neighbourhood}, \ref{second_neighbourhood} and \ref{third_neighbourhood}) we can't communicate with all states. Instead of changing the neighbourhoods for the states to communicate, we will rather introduce some 0's in the routes $(\theta^{(1)}, \theta^{(2)})$. These 0's can either be placed randomly or strategically (in between every number, for instance). We want to add 0's such that the length of the route is equal to the actual number of cities (20 in this case). \\
+
+\noindent
+The initial guess can for instance be random amount of destination (in random order), where every city are included in exactly one of the routes. Then add the 0's as described above. \\
+
+\noindent
+\textbf{Note:} the 0's will be skipped when first driving a route (invisible for the drivers), but will be helpful for us making the routes. These 0's may be confusing at first sight, but it will be very helpful. \\
+
+\noindent
+Let's introduce three neighbourhoods which all will be used in the final neighbourhood expression for the problem:
+
+\begin{align*}
+\label{first_neighbourhood}
+    \mathcal{N}_1(\theta^{(1)}, \theta^{(2)}) &= \{ \theta^{(1)}^*, \theta^{(2)}^* \, | \, \exists \, k, j \; \text{s.t.} \;  \theta^{(1)}^*_k = \theta^{(1)}_j , \,  \theta^{(1)}^*_j = \theta^{(1)}_k
+    \quad \text{and} \quad \theta^{(1)}^*_i = \theta^{(1)}_i \: \forall \: i \neq k, j \\
+    & \qquad \qquad \qquad \quad \theta^{(2)}^*_i = \theta^{(2)}_i \: \forall \: i \} \numberthis
+\end{align*}
+
+\begin{align*}
+\label{second_neighbourhood}
+    \mathcal{N}_2(\theta^{(1)}, \theta^{(2)}) &= \{ \theta^{(1)}^*, \theta^{(2)}^* \, | \, \exists \, k, j \; \text{s.t.} \;  \theta^{(2)}^*_k = \theta^{(2)}_j , \,  \theta^{(2)}^*_j = \theta^{(2)}_k
+    \quad \text{and} \quad \theta^{(2)}^*_i = \theta^{(2)}_i \: \forall \: i \neq k, j \\
+    & \qquad \qquad \qquad \quad \theta^{(1)}^*_i = \theta^{(1)}_i \: \forall \: i \} \numberthis
+\end{align*}
+
+\begin{align*}
+\label{third_neighbourhood}
+    \mathcal{N}_3(\theta^{(1)}, \theta^{(2)}) &= \{ \theta^{(1)}^*, \theta^{(2)}^* \, | \, \exists \, k, j \; \text{s.t.} \;  \theta^{(1)}^*_k = \theta^{(2)}_j , \,  \theta^{(2)}^*_j = \theta^{(1)}_k
+    \quad \text{and} \quad \theta^{(2)}^*_i = \theta^{(2)}_i \: \forall \: i \neq j \\
+    & \qquad \qquad \qquad \quad \theta^{(1)}^*_i = \theta^{(1)}_i \: \forall \: i \neq k \} \numberthis
+\end{align*}
+our neighbourhood will the union of \ref{first_neighbourhood}, \ref{second_neighbourhood} and \ref{third_neighbourhood}:
+
+\begin{align}
+    \mathcal{N}(\theta^{(1)}, \theta^{(2)}) = 
+    \mathcal{N}_1(\theta^{(1)}, \theta^{(2)}) \cup
+    \mathcal{N}_2(\theta^{(1)}, \theta^{(2)}) \cup
+    \mathcal{N}_3(\theta^{(1)}, \theta^{(2)})
+\end{align}
+
+\noindent
+\textbf{Communication:} The algorithm will then be able to reach to all possible states. This will be the case, since you can follow the following steps:\\
+
+\noindent
+Given routes/ states: $R = (R_1, R_2)$, where $R_i$ is the route for the i-th lorry. 
+
+\begin{enumerate}
+    \item First, use $\mathcal{N}_3$ to switch in all cities in $\theta^{(1)}$ that are included in $R_1$ (with either 0's or cities included in $R_2$).
+    \item Second, use $\mathcal{N}_3$ to switch out all cities in $\theta^{(1)}$ that are included in $R_2$ (switch them with 0's)
+    \item Then use both $\mathcal{N}_1$ and $\mathcal{N}_2$ to move all the 0's at the end of the sequence. 
+    \item Last step, rearrange $(\theta^{(1)}, \theta^{(2)})$ s.t. they are equal to $R$. This can be done, as explained in exercise 4a \ref{exercise_4}.
+\end{enumerate}
+\noindent
+We want to minimize the maximum distance that the lorries are driving. In other words, minimize the time for both of them to come back to the starting point given that all the cities have got their products. The implementation of the algorithm is located in the appendix \ref{exercise_4d_appendix}. The script will get us the following results: \\
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=8.5cm]{img_4d_improvement.png}
+    \captionof{figure}{the distribution time of the current solution over iteration in the simulated annealing algorithm}
+    \label{img_4b_improvement}
+\end{figure}
+
+\captionsetup{justification=centering}
+\begin{figure}[H]
+    \begin{minipage}{.5\textwidth}
+      \centering
+      \includegraphics[height=7.2cm, width=7.8cm]{img_4d_now.png}
+      \captionof{figure}{The best route in current simulation (distance: 2.606809)}
+      \label{fig: img_4d_now}
+    \end{minipage}%
+    \hspace{\fill}
+    \begin{minipage}{.5\textwidth}
+      \flushright
+      \centering
+      \includegraphics[height=7.2cm, width=7.8cm]{img_4d_best.png}
+      \captionsetup{justification=centering}
+      \captionof{figure}{The all time best route \\ (distance: 2.319307)}
+      \label{fig: img_4d_best}
+    \end{minipage}
+\end{figure} 
+
+\noindent
+The company should consider buying a new lorry, since the time usage of delivering the products will reduce a lot (but they need to find if it is necessary to deliver the products faster, or it would be a total waste).
+
+\section{Exercise 5 (Stochastic gradient decent, SGD)}
+
+We are going through an example of a simple neural network, with one hidden layer of length 50, and will be using the RELU activation function, which is:
+
+\begin{align}
+    \label{RELU_activation}
+    \sigma(x) = 
+    \begin{cases} 
+      x & x > 0 \\
+      0 & x \leq 0 \\
+   \end{cases}
+\end{align}
+where the derivative is defined as:
+
+\begin{align}
+    \label{RELU_activation_derivative}
+    \sigma^{'}(x) = 
+    \begin{cases} 
+      1 & x > 0 \\
+      0 & x \leq 0 \\
+   \end{cases}
+\end{align}, 
+
+We have further the architecture of the neural network:
+
+\begin{align*}
+    f(x) = \sum_{i=1}^{50} \beta_i \sigma(\alphi_i x + \alpha_{0, i})
+\end{align*}
+
+\section{Appendix}
+\renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
+\subsection{Exercise 1}
+\label{exercise_1_appendix}
+Here you can see some functions used in the \textbf{exercise 1}. The bisection method is a method for finding a root of an expression. 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=16cm]{exercise_1.png}
+\end{figure}
+
+\subsection{Exercise 1c}
+\label{exercise_1_c_appendix}
+This script will for two $\gammas 's$, plotting the function $f$ for different $p$-values. We will also plot the inverse function by flipping the order of the arguments #TODO. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=16cm]{exercise_1c.png}
+\end{figure}
+
+\subsection{Exercise 1d}
+\label{exercise_1_d_appendix}
+This script calls the functions in \ref{exercise_1_appendix} to be able to use bisection method to find the solution of $beta_opt$ given $y$.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=16cm]{exercise_1d.png}
+\end{figure}
+
+\newpage
+\subsection{Exercise 1e}
+\label{exercise_1_e_appendix}
+This script calls the functions in \ref{exercise_1_appendix} to be able to use bisection method to find the solution of $beta_opt$ given $y$. We are using a data set, and comparing the different methods (derived earlier in the task). And some alternative way of achieving the $\beta's$ that were introduced in this task. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=16cm]{exercise_1e.png}
+\end{figure}
+\noindent
+\textbf{Results (terminal output):}
+
+\begin{lstlisting}[language = R]
+> # First case
+> residuals
+     ps residuals
+1   1.1  273.9674
+2   2.0 1256.5316
+3 100.0 3786.6181
+
+> # Second case
+> residual_MLE
+[1] 998.4152
+
+> # Third case
+> residuals_alternative
+[1] 5785.6463 2425.7279  333.3705
+\end{lstlisting}
+where the last numbers are against $p$-values introduced (respectively).
+
+\newpage
+\subsection{Exercise 2}
+\label{exercise_2_appendix}
+Here you can see some functions used in \textbf{exercise 2}. Among those are $p_i$ - which is described in the solution, both updating functions for $(p, \tau^2)$, and the EM-algorithm.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=16cm]{exercise_2.png}
+\end{figure}
+\noindent
+
+\subsection{Exercise 2d}
+\label{exercise_2_d_appendix}
+Implementing the solution of the $Q$ function, and use the EM algorithm on the data.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=16cm]{exercise_2d.png}
+\end{figure}
+\noindent
+\textbf{Results:}
+\begin{lstlisting}[language = R]
+iter:  1, 0.500000 2.000000
+iter: 17, 0.964656 112.156166
+\end{lstlisting}
+where the values correspond to $(p, \tau^2)$ respectively. 
+
+\subsection{Exercise 2e}
+\label{exercise_2_e_appendix}
+
+\subsection{Exercise 2f}
+\label{exercise_2_f_appendix}
+
+\subsection{Exercise 3}
+\label{exercise_3_appendix}
+
+\newpage
+\subsection{Exercise 4}
+\label{exercise_4_appendix}
+Here you can see some functions used in \textbf{exercise 4}. The functions you can see on the first page are two functions for calculating the distance of traveling the routes, and a distance of traveling max - which represent the maximum time there will be for two lorries to deliver products. The last function seen at this page is for visualize the travel, so we can interpret if it is somehow correct (that is do not have some terrible choices).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=16cm]{exercise_4_1.png}
+\end{figure}
+\newpage
+\noindent
+The function seen on this page is used by exercise 4d, where we have two lorries that have their own route they need to drive. It will draw the routes for the two lorries
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=16cm]{exercise_4_2.png}
+\end{figure}
+\newpage
+\noindent
+The first function on this page shows how to initialize the $\theta$ solutions in the last case (two lorries). We introduces the zero's as explained in the solution to this exercise. The last function on this page is a simple function for checking whether the first argument are included in the second argument (where the second argument is a list). This is very convenient to use when looking at the TABU algorithm. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=16cm]{exercise_4_3.png}
+\end{figure}
+
+\newpage
+\subsection{Exercise 4a}
+\label{exercise_4a_appendix}
+Implementing the simulated annealing algorithm
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=16cm]{exercise_4a_1.png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=16cm]{exercise_4a_2.png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=16cm]{exercise_4a_3.png}
+\end{figure}
+
+\newpage
+\subsection{Exercise 4b}
+Implementing the TABU-algorithm
+\label{exercise_4b_appendix}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=16cm]{exercise_4b_1.png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=16cm]{exercise_4b_2.png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=16cm]{exercise_4b_3.png}
+\end{figure}
+
+\subsection{Exercise 4d}
+\label{exercise_4d_appendix}
+Implementing the simulated annealing algorithm for two lorries.  
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=16cm]{exercise_4d_1.png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=16cm]{exercise_4d_2.png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=16cm]{exercise_4d_3.png}
+\end{figure}
+
+\section{Bibliography}
+\printbibliography[heading=none] 
+
+\end{document}

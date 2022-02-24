@@ -7,8 +7,12 @@ x = optimalTransport$x
 y = optimalTransport$y
 
 
-# distance 4.169531
-best_to_now = c(19, 21, 8, 4, 7, 20, 10, 5, 2, 6, 11, 16, 3, 13, 14, 18, 15, 9, 12, 17)
+# distance 3.8667
+best_to_now = c(19, 14, 13, 3, 16, 11, 6, 2, 5, 10, 20, 7, 4, 21, 8, 12, 18, 17, 9, 15)
+
+
+# fox (dist = 4.1695):
+# best_to_now = c(19, 21, 8, 4, 7, 20, 10, 5, 2, 6, 11, 16, 3, 13, 14, 18, 15, 9, 12, 17)
 
 if (FALSE){
   route.current = best_to_now
@@ -88,6 +92,7 @@ while(!(converged) && iter < max_iter)
 }
 
 plot.ts(dist_seq)
+show(distance_of_traveling(x, y, best_to_now))
 show(min(dist_seq))
 
 #draw_route_of_traveling(x, y, route.current, wait = 0.3)

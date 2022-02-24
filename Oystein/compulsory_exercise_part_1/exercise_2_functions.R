@@ -1,6 +1,8 @@
 p_i = function(y_i, squared_tau, p) {
   numerator = dnorm(y_i, mean = 0, sd = 1) * p
   denominator = numerator + dnorm(y_i, mean = 0, sd = squared_tau + 1) * (1 - p)
+  
+  numerator/denominator
 }
 
 p_update = function(y, squared_tau_cur, p_cur) {

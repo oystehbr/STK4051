@@ -44,14 +44,12 @@ for (i in 1:3) {
   residuals_alternative[i] = sum((unlist(beta_alternative[i]) - betaGT))^2
 }
 
-residuals_alternative_table = data.frame(ps, residual_alternative)
+residuals_alternative_table = data.frame(ps, residuals_alternative)
 
 # First case
 residuals
-
 # Second case
 residual_MLE
-
 # Third case
 residuals_alternative
 

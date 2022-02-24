@@ -1,4 +1,4 @@
-
+# The function in the task
 f = function(beta, gamma, p) {
   beta + gamma * sign(beta) * abs(beta) ^ (p-1)
 }

@@ -6,7 +6,6 @@ colnames(optimalTransport) = c('x', 'y')
 x = optimalTransport$x
 y = optimalTransport$y
 
-
 # Adding all the cities, and equal amount of 0's to the places list, that 
 # each theta will divide between
 places = sample(c(sample(2:length(x), replace = FALSE), rep(0, length(x) - 1)))
@@ -58,7 +57,6 @@ while(!(converged) && iter < max_iter)
   route1.neighbor = route1.current
   route2.neighbor = route2.current
   
-  
   # Finding two values to switch, in one case
   index_of_switching = sample(1 : n, 2, replace = FALSE)
   
@@ -84,15 +82,12 @@ while(!(converged) && iter < max_iter)
     
     value_1 = route1.current[index_of_switching[1]]
     value_2 = route2.current[index_of_switching[2]]
-    
     # switching the values
     route1.neighbor[index_of_switching[1]] = value_2
     route2.neighbor[index_of_switching[2]] = value_1
   }
   
-  
   dist_neighbor = distance_of_traveling_max(x, y, route1.neighbor, route2.neighbor)
-  
   
   # The probability of switching the model
   prob = exp((dist_current - dist_neighbor)/tau)
@@ -135,7 +130,8 @@ while(!(converged) && iter < max_iter)
 
 plot.ts(dist_seq)
 show(min(dist_seq))
+show(distance_of_traveling_max(x, y, best_route1, best_route2))
 
-#draw_route_of_traveling_2(x, y, route1.current, route2.current, wait = 0.3)
-#draw_route_of_traveling_2(x, y, best_route1_now, best_route2_now, wait = 0.7)
+draw_route_of_traveling_2(x, y, best_route1, best_route2, wait = 0.3)
+draw_route_of_traveling_2(x, y, best_route1_now, best_route2_now, wait = 0.3)
 
