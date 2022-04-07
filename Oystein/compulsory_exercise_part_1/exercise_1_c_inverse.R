@@ -9,11 +9,11 @@ first = TRUE
 count = 1
 for(p in ps){
   if(first){
-    plot(beta, f(beta, gamma, p), type='l', col = count, ylim = c(-8, 8), xlim = c(-5, 5), 
-         lwd = 2, main = 'The function with gamma = 1', ylab = expression("f"['p, y'] ~ (beta)))
+    plot(f(beta, gamma, p), beta, type='l', col = count, ylim = c(-5, 5), xlim = c(-8, 8), 
+         lwd = 2, main = 'The inverse function with gamma = 1', xlab = expression("f"['p, y'] ~ (beta)))
     first = FALSE
   } else {
-    lines(beta, f(beta, gamma, p), col = count, lwd = 2)
+    lines(f(beta, gamma, p), beta, col = count, lwd = 2)
   }
   
   count = count + 1
@@ -29,11 +29,11 @@ first = TRUE
 count = 1
 for(p in ps){
   if(first){
-    plot(beta, f(beta, gamma, p), type='l', col = count, ylim = c(-8, 8), xlim = c(-5.1, 5.1), 
-         lwd = 2, main = 'The function with gamma = 0.2', ylab = expression("f"['p, y'] ~ (beta)))
+    plot(f(beta, gamma, p), beta, type='l', col = count, ylim = c(-5, 5), xlim = c(-8, 8), 
+         lwd = 2, main = 'The inverse function with gamma = 0.2', xlab = expression("f"['p, y'] ~ (beta)))
     first = FALSE
   } else {
-    lines(beta, f(beta, gamma, p), col = count, lwd = 2)
+    lines(f(beta, gamma, p), beta, col = count, lwd = 2)
   }
   
   count = count + 1

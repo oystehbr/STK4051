@@ -41,7 +41,7 @@ beta_alternative = list()
 residuals_alternative = rep(NA, 3) 
 for (i in 1:3) {
   beta_alternative = c(beta_alternative, list(unlist(y_list3[i]) - unlist(beta_penelized[i])))
-  residuals_alternative[i] = sum((unlist(beta_alternative[i]) - betaGT))^2
+  residuals_alternative[i] = sum((unlist(beta_alternative[i]) - betaGT)^2)
 }
 
 residuals_alternative_table = data.frame(ps, residuals_alternative)

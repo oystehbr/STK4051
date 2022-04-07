@@ -1,6 +1,6 @@
 p_i = function(y_i, squared_tau, p) {
   numerator = dnorm(y_i, mean = 0, sd = 1) * p
-  denominator = numerator + dnorm(y_i, mean = 0, sd = squared_tau + 1) * (1 - p)
+  denominator = numerator + dnorm(y_i, mean = 0, sd = sqrt(squared_tau + 1)) * (1 - p)
   
   numerator/denominator
 }
@@ -52,4 +52,5 @@ EM_algorithm = function(y, p_1, squared_tau_1, printing = FALSE, eps = 10^-10, m
   
   c(p_2, squared_tau_2)
 }
+
 

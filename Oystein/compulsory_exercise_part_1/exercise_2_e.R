@@ -24,14 +24,12 @@ for(b in 1:B) {
   values = EM_algorithm(y_sample, p_init, squared_tau_init)
   p_simulated[b] = values[1]
   squared_tau_simulated[b] = values[2]
-  print(B)
+  print(b)
   
 }
 
-plot(p_simulated)
-plot(squared_tau_simulated)
-hist(p_simulated, breaks = 10)
-hist(squared_tau_simulated, breaks = 20)
+plot(squared_tau_simulated, p_simulated)
+
 
 print('Bias:')
 show(mean(p_simulated) - p_opt)
